@@ -18,6 +18,16 @@ generates a Markdown report summarising demand insights.
 - Automatic rendering and download link for the Markdown demand report produced
   by the workflow.
 
+## Screenshots
+
+### Main UI
+
+![Main User Interface](images/main_ui.png)
+
+### Example Report
+
+![Example Demand Evaluation Report](images/report1.png)
+
 ## Getting started
 
 1. Set up a Python virtual environment (recommended):
@@ -98,3 +108,6 @@ workflow_definitions/         Demand evaluation workflow copied from wirl
 
 Generated Markdown reports are ignored via `.gitignore` to keep the repository
 clean.
+
+## **License**
+MIT.
