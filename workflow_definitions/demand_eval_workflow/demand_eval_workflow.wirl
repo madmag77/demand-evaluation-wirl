@@ -25,6 +25,7 @@ workflow DemandEvalWorkflow {
     }
     const {
       model: "gpt-oss:20b"
+      model_type: "ollama"
     }
     outputs {
       List<Object<Persona>> personas
@@ -38,6 +39,7 @@ workflow DemandEvalWorkflow {
     }
     const {
       embedding_model: "embeddinggemma"
+      embedding_provider: "ollama"
     }
     outputs {
       List<List<Float>> golden_embeddings
@@ -78,6 +80,7 @@ workflow DemandEvalWorkflow {
       }
       const {
         model: "gpt-oss:20b"
+        model_type: "ollama"
       }
       outputs {
         String intent_text
@@ -93,6 +96,7 @@ workflow DemandEvalWorkflow {
       }
       const {
         embedding_model: "embeddinggemma"
+        embedding_provider: "ollama"
       }
       outputs {
         Object<PersonaEvaluation> evaluation

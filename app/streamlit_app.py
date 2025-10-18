@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 
-import os
 import sys
 import uuid
-from contextlib import contextmanager
 from pathlib import Path
-from typing import Dict, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Iterable, List, Mapping, MutableMapping
 
 import pandas as pd
 import streamlit as st
@@ -32,6 +30,8 @@ st.title("Simulated Demand Evaluation")
 
 st.markdown(
     """
+    **Inspired by**: [LLMs Reproduce Human Purchase Intent via Semantic Similarity Elicitation of Likert Ratings](https://arxiv.org/pdf/2510.08338)  
+
     This demo wraps the [Demand Evaluation Workflow](https://github.com/madmag77/wirl/tree/main/workflow_definitions/demand_eval_workflow)
     and lets you estimate simulated purchase intent for a product using
     [WIRL](https://pypi.org/project/wirl-lang/) + [wirl-pregel-runner](https://pypi.org/project/wirl-pregel-runner/).
@@ -42,35 +42,14 @@ st.markdown(
 )
 
 
-@contextmanager
-def temporary_environ(overrides: Mapping[str, Optional[str]]):
-    """Temporarily set environment variables during the workflow run."""
-
-    previous: Dict[str, Optional[str]] = {}
-    try:
-        for key, value in overrides.items():
-            previous[key] = os.environ.get(key)
-            if value is None:
-                if key in os.environ:
-                    del os.environ[key]
-            else:
-                os.environ[key] = value
-        yield
-    finally:
-        for key, old_value in previous.items():
-            if old_value is None:
-                os.environ.pop(key, None)
-            else:
-                os.environ[key] = old_value
-
-
 with st.sidebar:
     st.header("Setup checklist")
     st.markdown(
         """
         * Install dependencies with `pip install -r requirements.txt`.
-        * Start the providers referenced below (e.g. ensure Ollama models are available
+        * Start the providers (e.g. ensure Ollama models are available
           or set `OPENAI_API_KEY`).
+        * Configure model providers in the WIRL workflow if needed.
         * Run the app with `streamlit run app/streamlit_app.py`.
         * Generated Markdown reports are stored in the chosen output directory.
         """
@@ -114,13 +93,12 @@ if submitted:
 
         with st.spinner("Running workflow – this can take a few minutes depending on the models..."):
             try:
-                with temporary_environ(env_overrides):
-                    result = run_workflow(
-                        str(WORKFLOW_PATH),
-                        get_function_map(),
-                        params=params,
-                        thread_id=thread_id,
-                    )
+                result = run_workflow(
+                    str(WORKFLOW_PATH),
+                    get_function_map(),
+                    params=params,
+                    thread_id=thread_id,
+                )
             except Exception as exc:  # pragma: no cover - runtime feedback for the UI
                 st.error(
                     "Demand evaluation failed. Double-check that your models are available and environment variables are set.\n"

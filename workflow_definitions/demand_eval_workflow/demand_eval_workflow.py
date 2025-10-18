@@ -19,7 +19,7 @@ from typing import Dict, List
 
 import numpy as np
 from langchain_ollama import ChatOllama, OllamaEmbeddings
-from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from pydantic import BaseModel, Field
 
 from workflow_definitions.demand_eval_workflow.prompts import (
@@ -153,15 +153,19 @@ def calculate_golden_embeddings(num_personas: int, config: dict) -> dict:
 
     Args:
         num_personas: Number of personas (not used, but required for workflow dependency)
-        config: Runner config with embedding_model
+        config: Runner config with embedding_model and embedding_provider
 
     Returns:
         dict with golden_embeddings (list of 5 average embeddings, one per rating level)
     """
     embedding_model = config.get("embedding_model", "nomic-embed-text")
+    embedding_provider = config.get("embedding_provider", "ollama")
 
-    # Initialize embeddings model
-    embeddings = OllamaEmbeddings(model=embedding_model)
+    # Initialize embeddings model based on provider
+    if embedding_provider == "openai":
+        embeddings = OpenAIEmbeddings(model=embedding_model)
+    else:
+        embeddings = OllamaEmbeddings(model=embedding_model)
 
     # Calculate embeddings for each rating level
     golden_embeddings = []
@@ -188,19 +192,24 @@ def generate_personas(num_personas: int, config: dict) -> dict:
 
     Args:
         num_personas: Number of personas to generate
-        config: Runner config with model and temperature
+        config: Runner config with model, temperature, and model_type
 
     Returns:
         dict with personas list
     """
     model = config.get("model", "gemma3:12b")
     temperature = config.get("temperature", 0.8)
+    model_type = config.get("model_type", "ollama")
 
-    llm = ChatOllama(
-        model=model,
-        temperature=temperature,
-        validate_model_on_init=True,
-    )
+    # Initialize LLM based on provider
+    if model_type == "openai":
+        llm = ChatOpenAI(model=model, temperature=temperature)
+    else:
+        llm = ChatOllama(
+            model=model,
+            temperature=temperature,
+            validate_model_on_init=True,
+        )
 
     # Generate diverse personas
     personas = []
@@ -373,15 +382,19 @@ def calculate_persona_metrics(
         persona: The persona who provided the intent
         intent_text: Textual description of purchase intent
         golden_embeddings: Pre-calculated average embeddings for each rating level (1-5)
-        config: Runner config with embedding_model
+        config: Runner config with embedding_model and embedding_provider
 
     Returns:
         dict with evaluation containing purchase intent and probability distribution
     """
     embedding_model = config.get("embedding_model", "nomic-embed-text")
+    embedding_provider = config.get("embedding_provider", "ollama")
 
-    # Initialize embeddings model (Nomic via Ollama)
-    embeddings = OllamaEmbeddings(model=embedding_model)
+    # Initialize embeddings model based on provider
+    if embedding_provider == "openai":
+        embeddings = OpenAIEmbeddings(model=embedding_model)
+    else:
+        embeddings = OllamaEmbeddings(model=embedding_model)
 
     # Vectorize the intent text and calculate similarities
     try:
