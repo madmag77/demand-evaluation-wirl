@@ -15,13 +15,18 @@ from dotenv import load_dotenv
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from wirl_pregel_runner import run_workflow
-from workflow_definitions.demand_eval_workflow import (
-    DemandMetrics,
-    Persona,
-    PersonaEvaluation,
-    WORKFLOW_PATH,
-    get_function_map,
-)
+from workflow_definitions.demand_eval_workflow.demand_eval_workflow import (
+    DemandMetrics, 
+    Persona, 
+    PersonaEvaluation, 
+    generate_personas, 
+    calculate_golden_embeddings, 
+    process_next_persona, 
+    get_purchase_intent, 
+    calculate_persona_metrics,
+    collect_evaluations,
+    analyze_demand, save_report,
+    )
 
 load_dotenv()
 
@@ -93,9 +98,20 @@ if submitted:
 
         with st.spinner("Running workflow – this can take a few minutes depending on the models..."):
             try:
+                    # Function mapping for the workflow
+                FN_MAP = {
+                    "generate_personas": generate_personas,
+                    "calculate_golden_embeddings": calculate_golden_embeddings,
+                    "process_next_persona": process_next_persona,
+                    "get_purchase_intent": get_purchase_intent,
+                    "calculate_persona_metrics": calculate_persona_metrics,
+                    "collect_evaluations": collect_evaluations,
+                    "analyze_demand": analyze_demand,
+                    "save_report": save_report,
+                }
                 result = run_workflow(
-                    str(WORKFLOW_PATH),
-                    get_function_map(),
+                    "workflow_definitions/demand_eval_workflow/demand_eval_workflow.wirl",
+                    fn_map=FN_MAP,
                     params=params,
                     thread_id=thread_id,
                 )
